@@ -10,6 +10,7 @@ use mongodb::{bson::{Document, doc}, Client, Collection };
 mod routes;
 mod models;
 mod services;
+mod errors;
 
 #[tokio::main]
 async fn main() {
