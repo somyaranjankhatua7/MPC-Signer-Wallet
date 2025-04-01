@@ -21,6 +21,9 @@ num-bigint = "0.4.6"
 sss-rs = "0.12.0"
 futures = "0.3.28"
 async-trait = "0.1.88"
+rust-ipfs = "0.14.1"
+aes = "0.8.4"
+cipher = "0.4.4"
 
 [dependencies.mongodb]
 version = "3.2.3"

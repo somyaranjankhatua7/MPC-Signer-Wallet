@@ -55,44 +55,51 @@ impl UserServices for Database {
         let secret_key = KeyServices::generate_secret_key().unwrap();
         let mut split_secret_key =
             KeyServices::split_secret_key(&secret_key.secret_bytes()).unwrap();
-        let extracted_part = split_secret_key.pop().unwrap_or_default();
+        // let extracted_part = split_secret_key.pop().unwrap_or_default();
 
-        let user_wallet = UserWalletSchema {
-            id: None,
-            device_id: payload.device_id,
-            backup_key: payload.backup_key,
-            private_key_part: extracted_part,
-            user_ipsh_hash: String::from("IPSH"),
+        let (part_one, part_two, part_three) = match split_secret_key.as_slice() {
+            [first, second, third] => (first, second, third),
+            _ => panic!("Expected exactly 3 vectors"),
         };
 
-        match self.user_wallet.insert_one(user_wallet).await {
-            Ok(_) => AxumApiResponse::Success(
-                StatusCode::OK,
-                JsonApiResponse {
-                    message: Some(String::from("User registered Successfully")),
-                    error: None,
-                },
-            ),
+        // let user_wallet = UserWalletSchema {
+        //     id: None,
+        //     device_id: payload.device_id,
+        //     backup_key: payload.backup_key,
+        //     private_key_part_one: part_one,
+        //     private_key_part_two: part_two,
+        //     private_key_part_three: part_three,
+        //     user_ipsh_hash: String::from("IPSH"),
+        // };
 
-            Err(e) => {
-                if e.to_string().contains("E11000 duplicate key error") {
-                    AxumApiResponse::Error(
-                        StatusCode::CONFLICT,
-                        JsonApiResponse {
-                            message: None,
-                            error: Some(String::from("Device ID already exists")),
-                        },
-                    )
-                } else {
-                    AxumApiResponse::Error(
-                        StatusCode::CONFLICT,
-                        JsonApiResponse {
-                            message: None,
-                            error: Some(String::from("Server error")),
-                        },
-                    )
-                }
-            }
-        }
+        // match self.user_wallet.insert_one(user_wallet).await {
+        //     Ok(_) => AxumApiResponse::Success(
+        //         StatusCode::OK,
+        //         JsonApiResponse {
+        //             message: Some(String::from("User registered Successfully")),
+        //             error: None,
+        //         },
+        //     ),
+
+        //     Err(e) => {
+        //         if e.to_string().contains("E11000 duplicate key error") {
+        //             AxumApiResponse::Error(
+        //                 StatusCode::CONFLICT,
+        //                 JsonApiResponse {
+        //                     message: None,
+        //                     error: Some(String::from("Device ID already exists")),
+        //                 },
+        //             )
+        //         } else {
+        //             AxumApiResponse::Error(
+        //                 StatusCode::CONFLICT,
+        //                 JsonApiResponse {
+        //                     message: None,
+        //                     error: Some(String::from("Server error")),
+        //                 },
+        //             )
+        //         }
+        //     }
+        // }
     }
 }
