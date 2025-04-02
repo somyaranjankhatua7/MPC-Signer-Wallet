@@ -2,6 +2,7 @@ use rand::{RngCore, TryRngCore, rngs::OsRng};
 use secp256k1::SecretKey;
 use sss_rs::basic_sharing;
 use std::{error::Error, result::Result};
+use hex;
 
 use crate::errors::auth_errors::KeyGenerationError;
 

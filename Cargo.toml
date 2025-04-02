@@ -24,6 +24,8 @@ async-trait = "0.1.88"
 rust-ipfs = "0.14.1"
 aes = "0.8.4"
 cipher = "0.4.4"
+hex = "0.4.3"
+ethers = "2.0.14"
 
 [dependencies.mongodb]
 version = "3.2.3"
