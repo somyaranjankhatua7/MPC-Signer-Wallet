@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 pub struct UserWalletSchema {
     #[serde(rename="_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    pub device_id: String,
-    pub backup_key: Option<String>,
+    pub email: String,
+    pub password: String,
     pub private_key_a: String,
     pub private_key_b: String,
     pub private_key_c: String,

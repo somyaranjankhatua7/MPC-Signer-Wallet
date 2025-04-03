@@ -20,7 +20,7 @@ impl Database {
         let database = client.database("wallet_database");
         let opt = IndexOptions::builder().unique(true).build();
         let index = IndexModel::builder()
-            .keys(doc! {"device_id": 1})
+            .keys(doc! {"email": 1})
             .options(opt)
             .build();
 
