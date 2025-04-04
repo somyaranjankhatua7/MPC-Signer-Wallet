@@ -1,5 +1,5 @@
 use crate::{
-    models::user_wallet_model::UserWalletSchema,
+    models::user_wallet_model::{UserWalletSchema, ChainInfo},
     services::{database::Database, key_services},
 };
 use async_trait::async_trait;
@@ -17,7 +17,7 @@ use rand::{RngCore, TryRngCore, rngs::OsRng};
 use secp256k1::SecretKey;
 use serde::{Deserialize, Serialize};
 use sss_rs::basic_sharing;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use wcookie::SetCookie;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -54,6 +54,7 @@ pub trait UserServices {
 impl UserServices for Database {
     async fn register_user(&self, payload: RegisterRequest) -> AxumApiResponse {
         use crate::services::key_services::KeyServices;
+        use crate::services::chains_services::generate_chain_data;
 
         // Check if user already exists
         if self
@@ -77,6 +78,7 @@ impl UserServices for Database {
         // Generate secret key parts
         let secret_key = KeyServices::generate_secret_key().unwrap();
         let hex_secret_key = hex::encode(secret_key.secret_bytes());
+        println!("{:?}", hex_secret_key);
         let part_size = hex_secret_key.len() / 3;
         let (part_one, part_two, part_thr) = (
             &hex_secret_key[..part_size],
@@ -104,6 +106,17 @@ impl UserServices for Database {
         cookie.http_only = true;
         cookie.path = Some(String::from("/"));
 
+        // Addind default chain configurations
+        let (_address, _public_key) = generate_chain_data(&hex_secret_key);
+        let mut chains = HashMap::new();
+        chains.insert(String::from("1"), ChainInfo {
+            index: 1,
+            public_key: _public_key,
+            address: _address,
+            balance: String::from("0"),
+            rpc_url: String::from("r")
+        });
+
         // Create user schema
         let user_wallet = UserWalletSchema {
             id: None,
@@ -112,6 +125,7 @@ impl UserServices for Database {
             private_key_a: part_one.to_string(),
             private_key_b: part_two.to_string(),
             private_key_c: part_thr.to_string(),
+            chains
         };
 
         // Insert user into database
