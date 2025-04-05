@@ -19,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use sss_rs::basic_sharing;
 use std::{collections::HashMap, sync::Arc};
 use wcookie::SetCookie;
+use ethers;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RegisterRequest {
@@ -206,6 +207,7 @@ impl UserServices for Database {
     }
 
     async fn create_transaction(&self, payload: TransactionRequest) -> AxumApiResponse {
+
         unimplemented!()
     }
 }
