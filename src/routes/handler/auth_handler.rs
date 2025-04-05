@@ -27,6 +27,16 @@ pub struct RegisterRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct TransactionRequest {
+    pub chain_id: String,
+    pub tx_type: String,
+    pub to: String,
+    pub from: String,
+    pub amount: u32
+}
+
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct JsonApiResponse {
     pub data: Option<UserWalletSchema>,
     pub message: Option<String>,
@@ -48,6 +58,8 @@ impl IntoResponse for AxumApiResponse {
 pub trait UserServices {
     async fn register_user(&self, payload: RegisterRequest) -> AxumApiResponse;
     async fn login_user(&self) -> AxumApiResponse;
+
+    async fn create_transaction(&self, payload: TransactionRequest) -> AxumApiResponse;
 }
 
 #[async_trait]
@@ -190,6 +202,10 @@ impl UserServices for Database {
     }
 
     async fn login_user(&self) -> AxumApiResponse {
+        unimplemented!()
+    }
+
+    async fn create_transaction(&self, payload: TransactionRequest) -> AxumApiResponse {
         unimplemented!()
     }
 }
