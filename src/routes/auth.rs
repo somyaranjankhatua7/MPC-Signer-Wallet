@@ -6,7 +6,7 @@ use axum::{
     routing::{get, post},
 };
 
-use super::handler::auth_handler::{RegisterRequest, UserServices};
+use super::handler::auth_handler::{RegisterRequest, UserAuthServices};
 
 pub fn auth_routes() -> Router {
     Router::new()

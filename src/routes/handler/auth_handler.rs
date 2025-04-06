@@ -1,7 +1,3 @@
-use crate::{
-    models::user_wallet_model::{UserWalletSchema, ChainInfo},
-    services::{database::Database, key_services},
-};
 use async_trait::async_trait;
 use axum::{
     Extension, Json, body,
@@ -17,9 +13,14 @@ use rand::{RngCore, TryRngCore, rngs::OsRng};
 use secp256k1::SecretKey;
 use serde::{Deserialize, Serialize};
 use sss_rs::basic_sharing;
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, fmt::Debug, sync::Arc};
 use wcookie::SetCookie;
-use ethers;
+
+use crate::routes::handler::response_handler::{AxumApiResponse, JsonApiResponse};
+use crate::{
+    models::user_wallet_model::{UserWalletSchema, ChainInfo},
+    services::{database::Database, key_services},
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RegisterRequest {
@@ -27,45 +28,19 @@ pub struct RegisterRequest {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TransactionRequest {
-    pub chain_id: String,
-    pub tx_type: String,
-    pub to: String,
-    pub from: String,
-    pub amount: u32
-}
 
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct JsonApiResponse {
-    pub data: Option<UserWalletSchema>,
-    pub message: Option<String>,
-    pub error: Option<String>,
-}
-pub enum AxumApiResponse {
-    Success(StatusCode, JsonApiResponse),
-    Error(StatusCode, JsonApiResponse),
-}
-impl IntoResponse for AxumApiResponse {
-    fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Success(status, response) => (status, Json(response)).into_response(),
-            Self::Error(status, error) => (status, Json(error)).into_response(),
-        }
-    }
-}
 #[async_trait]
-pub trait UserServices {
-    async fn register_user(&self, payload: RegisterRequest) -> AxumApiResponse;
-    async fn login_user(&self) -> AxumApiResponse;
-
-    async fn create_transaction(&self, payload: TransactionRequest) -> AxumApiResponse;
+pub trait UserAuthServices<T> 
+where 
+    T: Serialize + Debug
+{
+    async fn register_user(&self, payload: RegisterRequest) -> AxumApiResponse<T>;
+    async fn login_user(&self) -> AxumApiResponse<T>;
 }
 
 #[async_trait]
-impl UserServices for Database {
-    async fn register_user(&self, payload: RegisterRequest) -> AxumApiResponse {
+impl UserAuthServices<UserWalletSchema> for Database {
+    async fn register_user(&self, payload: RegisterRequest) -> AxumApiResponse<UserWalletSchema> {
         use crate::services::key_services::KeyServices;
         use crate::services::chains_services::generate_chain_data;
 
@@ -78,7 +53,7 @@ impl UserServices for Database {
             .flatten()
             .is_some()
         {
-            return AxumApiResponse::Error(
+            return AxumApiResponse::ERROR(
                 StatusCode::CONFLICT,
                 JsonApiResponse {
                     data: None,
@@ -91,7 +66,6 @@ impl UserServices for Database {
         // Generate secret key parts
         let secret_key = KeyServices::generate_secret_key().unwrap();
         let hex_secret_key = hex::encode(secret_key.secret_bytes());
-        println!("{:?}", hex_secret_key);
         let part_size = hex_secret_key.len() / 3;
         let (part_one, part_two, part_thr) = (
             &hex_secret_key[..part_size],
@@ -103,7 +77,7 @@ impl UserServices for Database {
         let hash_password = match hash(payload.password, DEFAULT_COST) {
             Ok(hash) => hash,
             Err(_) => {
-                return AxumApiResponse::Error(
+                return AxumApiResponse::ERROR(
                     StatusCode::INTERNAL_SERVER_ERROR,
                     JsonApiResponse {
                         data: None,
@@ -151,7 +125,7 @@ impl UserServices for Database {
                     "Server error"
                 };
 
-                return AxumApiResponse::Error(
+                return AxumApiResponse::SUCCESS(
                     StatusCode::CONFLICT,
                     JsonApiResponse {
                         data: None,
@@ -170,7 +144,7 @@ impl UserServices for Database {
         {
             Ok(Some(user)) => user,
             Ok(None) => {
-                return AxumApiResponse::Error(
+                return AxumApiResponse::ERROR(
                     StatusCode::INTERNAL_SERVER_ERROR,
                     JsonApiResponse {
                         data: None,
@@ -180,7 +154,7 @@ impl UserServices for Database {
                 );
             }
             Err(_) => {
-                return AxumApiResponse::Error(
+                return AxumApiResponse::ERROR(
                     StatusCode::INTERNAL_SERVER_ERROR,
                     JsonApiResponse {
                         data: None,
@@ -192,7 +166,7 @@ impl UserServices for Database {
         };
 
         // Return success response
-        AxumApiResponse::Success(
+        AxumApiResponse::SUCCESS(
             StatusCode::OK,
             JsonApiResponse {
                 data: Some(user_data),
@@ -202,12 +176,8 @@ impl UserServices for Database {
         )
     }
 
-    async fn login_user(&self) -> AxumApiResponse {
+    async fn login_user(&self) -> AxumApiResponse<UserWalletSchema> {
         unimplemented!()
     }
-
-    async fn create_transaction(&self, payload: TransactionRequest) -> AxumApiResponse {
-
-        unimplemented!()
-    }
+    
 }
