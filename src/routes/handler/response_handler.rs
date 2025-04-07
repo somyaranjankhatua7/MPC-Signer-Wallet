@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-
 use serde::{Deserialize, Serialize};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 
@@ -9,7 +8,6 @@ pub struct JsonApiResponse<T> {
     pub message: Option<String>,
     pub error: Option<String>,
 }
-
 pub enum AxumApiResponse<T> {
     SUCCESS(StatusCode, JsonApiResponse<T>),
     ERROR(StatusCode, JsonApiResponse<T>)

@@ -4,10 +4,10 @@ use std::sync::Arc;
 
 use crate::services::database::Database;
 
-use super::handler::transaction_handler::{TransactionRequest, UserTransactionServices};
+use super::handler::transaction_handler::{Transaction, UserTransactionServices};
 
 pub fn transaction_routes() -> Router {
-    Router::new().route("/user/create/transaction", get(|Extension(db): Extension<Arc<Database>>, Json(payload): Json<TransactionRequest>| async move {
+    Router::new().route("/user/create/transaction", get(|Extension(db): Extension<Arc<Database>>, Json(payload): Json<Transaction>| async move {
         db.create_transaction(payload).await
     }))
 }
