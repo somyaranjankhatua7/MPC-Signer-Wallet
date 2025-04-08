@@ -7,7 +7,12 @@ use crate::services::database::Database;
 use super::handler::transaction_handler::{Transaction, UserTransactionServices};
 
 pub fn transaction_routes() -> Router {
-    Router::new().route("/user/create/transaction", get(|Extension(db): Extension<Arc<Database>>, Json(payload): Json<Transaction>| async move {
-        db.create_transaction(payload).await
-    }))
+    Router::new().route(
+        "/user/create/transaction",
+        get(
+            |Extension(db): Extension<Arc<Database>>, Json(payload): Json<Transaction>| async move {
+                db.create_transaction(payload).await
+            },
+        ),
+    )
 }

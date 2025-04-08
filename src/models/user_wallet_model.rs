@@ -9,6 +9,12 @@ pub struct ChainInfo {
     pub address: String,
     pub balance: String,
     pub rpc_url: String,
+    pub chain_type: ChainType,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ChainType {
+    EVM,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

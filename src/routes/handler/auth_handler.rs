@@ -16,7 +16,7 @@ use sss_rs::basic_sharing;
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
 use wcookie::SetCookie;
 
-use crate::routes::handler::response_handler::{AxumApiResponse, JsonApiResponse};
+use crate::{models::user_wallet_model::ChainType, routes::handler::response_handler::{AxumApiResponse, JsonApiResponse}};
 use crate::{
     models::user_wallet_model::{UserWalletSchema, ChainInfo},
     services::{database::Database, key_services},
@@ -101,7 +101,8 @@ impl UserAuthServices<UserWalletSchema> for Database {
             public_key: _public_key,
             address: _address,
             balance: String::from("0"),
-            rpc_url: String::from("r")
+            rpc_url: String::from("https://eth.llamarpc.com"),
+            chain_type: ChainType::EVM
         });
 
         // Create user schema
