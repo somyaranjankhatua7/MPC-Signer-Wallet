@@ -26,12 +26,21 @@ pub fn generate_chain_data(secret_key: &str) -> (String, String) {
     (address_str, public_key)
 }
 
+
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ChainTypeTxn {
-    Evm(Eip1559TransactionRequest),
+    Evm(EVM),
 }
 
-pub struct Evm;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum EVM {
+    CreateTransaction(Eip1559TransactionRequest),
+    SignTransaction(),
+    SendTransaction()
+}
+
 
 #[async_trait]
 pub trait UserTxOperations<T>
@@ -42,10 +51,14 @@ where
         chain_data: &ChainInfo,
         payload: &Transaction,
     ) -> AxumApiResponse<T>;
+
+    async fn sign_transaction() -> AxumApiResponse<T>; 
+
+    async fn send_transaction() -> AxumApiResponse<T>;
 }
 
 #[async_trait]
-impl UserTxOperations<ChainTypeTxn> for Evm {
+impl UserTxOperations<ChainTypeTxn> for EVM {
     async fn create_transaction(
         chain_data: &ChainInfo,
         payload: &Transaction,
@@ -106,10 +119,18 @@ impl UserTxOperations<ChainTypeTxn> for Evm {
         AxumApiResponse::SUCCESS(
             StatusCode::OK,
             JsonApiResponse {
-                data: Some(ChainTypeTxn::Evm(tx)),
+                data: Some(ChainTypeTxn::Evm(EVM::CreateTransaction(tx))),
                 message: None,
                 error: None,
             },
         )
+    }
+
+    async fn sign_transaction() -> AxumApiResponse<ChainTypeTxn> {
+        unimplemented!();
+    }
+
+    async fn send_transaction() -> AxumApiResponse<ChainTypeTxn> {
+        unimplemented!();
     }
 }

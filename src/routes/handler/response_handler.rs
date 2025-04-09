@@ -24,3 +24,28 @@ where
         }
     }
 }
+
+
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct SuccessResponse<T> {
+//     pub data: Option<T>,
+//     pub message: Option<String>,
+//     pub status: StatusCode
+// }
+
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct ErrorResponse {
+//     pub error: Option<String>,
+//     pub status: StatusCode
+// }
+
+
+// impl <T> IntoResponse for SuccessResponse<T>
+// where 
+//     T: Serialize + Debug,
+// {
+//     fn into_response(self) -> axum::response::Response {
+//         let status = self.status;
+//         let body = Json(self.data);
+//     }
+// }

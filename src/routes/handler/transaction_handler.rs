@@ -12,7 +12,7 @@ use crate::{
     models::user_wallet_model::ChainType,
     routes::handler::response_handler::{AxumApiResponse, JsonApiResponse},
     services::{
-        chains_services::{ChainTypeTxn, Evm, UserTxOperations},
+        chains_services::{ChainTypeTxn, EVM, UserTxOperations},
         database::Database,
     },
 };
@@ -27,17 +27,22 @@ pub struct Transaction {
     pub amount: u32,
 }
 
+
+
 #[async_trait]
-pub trait UserTransactionServices<T>
-where
-    T: Serialize + Debug,
-{
-    async fn create_transaction(&self, payload: Transaction) -> AxumApiResponse<T>;
+pub trait UserTransactionServices {
+    type CreateTxResponse;
+
+    async fn create_transaction(&self, payload: Transaction) -> AxumApiResponse<Self::CreateTxResponse>;
+
+    async fn send_native_funds<T>(&self, payload: Transaction) -> AxumApiResponse<T>;
 }
 
 #[async_trait]
-impl UserTransactionServices<ChainTypeTxn> for Database {
-    async fn create_transaction(&self, payload: Transaction) -> AxumApiResponse<ChainTypeTxn> {
+impl UserTransactionServices for Database {
+    type CreateTxResponse = ChainTypeTxn;
+
+    async fn create_transaction(&self, payload: Transaction) -> AxumApiResponse<Self::CreateTxResponse> {
         let user_data = match self
             .user_wallet
             .find_one(doc! {"email": &payload.email })
@@ -83,7 +88,12 @@ impl UserTransactionServices<ChainTypeTxn> for Database {
         };
 
         match chain_data.chain_type {
-            ChainType::EVM => Evm::create_transaction(&chain_data, &payload).await,
+            ChainType::EVM => EVM::create_transaction(&chain_data, &payload).await,
         }
     }
+
+    async fn send_native_funds<T>(&self, payload: Transaction) -> AxumApiResponse<T> {
+        unimplemented!();
+    }
+
 }
