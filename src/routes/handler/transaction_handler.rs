@@ -17,6 +17,8 @@ use crate::{
     },
 };
 
+use super::response_handler::{ErrorResponse, SuccessResponse};
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Transaction {
     pub email: String,
@@ -34,8 +36,7 @@ pub trait UserTransactionServices {
     type CreateTxResponse;
 
     async fn create_transaction(&self, payload: Transaction) -> AxumApiResponse<Self::CreateTxResponse>;
-
-    async fn send_native_funds<T>(&self, payload: Transaction) -> AxumApiResponse<T>;
+    async fn send_native_funds<T>(&self, payload: Transaction) -> std::result::Result<SuccessResponse<T>, ErrorResponse>;
 }
 
 #[async_trait]
@@ -92,7 +93,7 @@ impl UserTransactionServices for Database {
         }
     }
 
-    async fn send_native_funds<T>(&self, payload: Transaction) -> AxumApiResponse<T> {
+    async fn send_native_funds<T>(&self, payload: Transaction) -> std::result::Result<SuccessResponse<T>, ErrorResponse> {
         unimplemented!();
     }
 
