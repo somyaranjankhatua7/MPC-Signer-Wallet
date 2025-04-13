@@ -56,7 +56,7 @@ pub struct ErrorResponse {
 
 impl IntoResponse for ErrorResponse {
     fn into_response(self) -> axum::response::Response {
-        let status = self.status;
+        let status: StatusCode = self.status;
         let body = Json(serde_json::json!({
             "error": self.error
         }));

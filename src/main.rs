@@ -17,6 +17,7 @@ mod errors;
 mod models;
 mod routes;
 mod services;
+mod chains;
 
 #[tokio::main]
 async fn main() {
