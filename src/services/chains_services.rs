@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use async_trait::async_trait;
 use ethers::providers::{Http, Middleware, Provider};
-use ethers::types::{BlockId, BlockNumber, Eip1559TransactionRequest, U256};
+use ethers::types::{BlockId, BlockNumber, Eip1559TransactionRequest, TransactionReceipt, U256};
 use ethers::{
     core::types::Address,
     signers::{LocalWallet, Signer},
@@ -36,5 +36,11 @@ pub struct ChainResponse {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TXChain {
-    EVM
+    EVM(EVMResponse)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EVMResponse {
+    pub transaction: ethers::types::Transaction,
+    pub recepient: TransactionReceipt
 }

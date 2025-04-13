@@ -13,10 +13,12 @@ use std::{
 };
 
 use crate::{
+    chains::ethereum::Ethereum,
     models::user_wallet_model::ChainType,
     routes::handler::response_handler::{AxumApiResponse, JsonApiResponse},
     services::{
-        chains_services::{ChainResponse, ChainTypeTxn, TXChain}, database::Database
+        chains_services::{ChainResponse, ChainTypeTxn, EVMResponse, TXChain},
+        database::Database,
     },
 };
 
@@ -42,63 +44,11 @@ pub trait UserTransactionServices {
 
 #[async_trait]
 impl UserTransactionServices for Database {
-    // async fn create_transaction(
-    //     &self,
-    //     payload: Transaction,
-    // ) -> AxumApiResponse<Self::CreateTxResponse> {
-    //     let user_data = match self
-    //         .user_wallet
-    //         .find_one(doc! {"email": &payload.email })
-    //         .await
-    //     {
-    //         Ok(data) => match data {
-    //             Some(user) => user,
-    //             None => {
-    //                 return AxumApiResponse::ERROR(
-    //                     StatusCode::NOT_FOUND,
-    //                     JsonApiResponse {
-    //                         data: None,
-    //                         message: None,
-    //                         error: Some(String::from("USER_NOT_FOUND!")),
-    //                     },
-    //                 );
-    //             }
-    //         },
-    //         Err(e) => {
-    //             return AxumApiResponse::ERROR(
-    //                 StatusCode::FORBIDDEN,
-    //                 JsonApiResponse {
-    //                     data: None,
-    //                     message: None,
-    //                     error: Some(String::from("DATABASE_ERROR!")),
-    //                 },
-    //             );
-    //         }
-    //     };
-
-    //     let chain_data = match user_data.chains.get(&payload.chain_id) {
-    //         Some(data) => data,
-    //         None => {
-    //             return AxumApiResponse::ERROR(
-    //                 StatusCode::NOT_FOUND,
-    //                 JsonApiResponse {
-    //                     data: None,
-    //                     message: None,
-    //                     error: Some(String::from("USER_CHAIN_DATA_NOT_FOUND!")),
-    //                 },
-    //             );
-    //         }
-    //     };
-
-    //     match chain_data.chain_type {
-    //         ChainType::EVM => EVM::create_transaction(&chain_data, &payload).await,
-    //     }
-    // }
-
     async fn send_native_funds(
         &self,
         payload: Transaction,
     ) -> std::result::Result<SuccessResponse<ChainResponse>, ErrorResponse> {
+        println!("Hell!");
 
         let res = match self
             .user_wallet
@@ -107,17 +57,36 @@ impl UserTransactionServices for Database {
         {
             Ok(data) => match data {
                 Some(user) => match user.chains.get(&payload.chain_id) {
-                    Some(chain_data) => {
-                        match chain_data.chain_type {
-                            ChainType::EVM => (
-                                SuccessResponse {
-                                    data: Some(ChainResponse{
-                                        chain: TXChain::EVM
-                                    }),
-                                    message: Some(String::from("OK!")),
-                                    status: StatusCode::OK
-                                } 
-                            )
+                    Some(chain_data) => match chain_data.chain_type {
+                        ChainType::EVM => {
+
+                            println!("{:?}", chain_data.chain_type);
+                            let private_key = format!(
+                                "{}{}{}",
+                                user.private_key_a, user.private_key_b, user.private_key_c
+                            );
+
+                            match Ethereum::send_native(&chain_data, &payload, private_key).await {
+                                Ok(tx_result) => {
+                                    SuccessResponse {
+                                        data: Some(ChainResponse {
+                                            chain: TXChain::EVM(EVMResponse {
+                                                transaction: tx_result.0,
+                                                recepient: tx_result.1,
+                                            }),
+                                        }),
+                                        message: Some(String::from("OK!")),
+                                        status: StatusCode::OK,
+                                    }
+                                },
+                                Err(e) => {
+                                    println!("{:?} HEllo", e);
+                                    return Err(ErrorResponse {
+                                        error: Some(String::from("USER_TX_ERROR!")),
+                                        status: StatusCode::NOT_FOUND,
+                                    });
+                                }
+                            }
                         }
                     },
                     None => {
@@ -143,6 +112,5 @@ impl UserTransactionServices for Database {
         };
 
         Ok(res)
-
     }
 }
