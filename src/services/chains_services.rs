@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use async_trait::async_trait;
+use axum::http::StatusCode;
 use ethers::providers::{Http, Middleware, Provider};
 use ethers::types::{BlockId, BlockNumber, Eip1559TransactionRequest, TransactionReceipt, U256};
 use ethers::{
@@ -8,7 +8,7 @@ use ethers::{
 };
 use hex;
 use serde::{Deserialize, Serialize};
-use axum::http::StatusCode;
+use std::fmt::Debug;
 
 use crate::routes::handler::response_handler::{AxumApiResponse, JsonApiResponse};
 use crate::{
@@ -31,16 +31,16 @@ pub enum ChainTypeTxn {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChainResponse {
-    pub chain: TXChain
+    pub chain: TXChain,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TXChain {
-    EVM(EVMResponse)
+    EVM(EVMResponse),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EVMResponse {
     pub transaction: ethers::types::Transaction,
-    pub recepient: TransactionReceipt
+    pub recepient: TransactionReceipt,
 }
