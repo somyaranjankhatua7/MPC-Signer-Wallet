@@ -8,6 +8,7 @@ pub struct WalletChainDataSchema {
     pub chain_id: String,
     pub endpoints: Vec<String>,
     pub chain_data: ChainData,
+    pub chain_type: ChainType
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -25,4 +26,10 @@ pub struct PerfomanceData {
     pub volume: String,
     pub traders: String,
     pub trades: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ChainType {
+    EVM,
+    SOLANA
 }
