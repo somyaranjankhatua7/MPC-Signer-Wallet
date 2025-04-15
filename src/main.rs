@@ -25,6 +25,7 @@ async fn main() {
     let db = Arc::new(Database::init().await);
 
     let app = Router::new()
+        .nest("/api/v1", routes::chain::chain_routes())
         .nest("/api/v1", routes::auth::auth_routes())
         .nest("/api/v1", routes::transaction::transaction_routes())
         .layer(Extension(db.clone()));
